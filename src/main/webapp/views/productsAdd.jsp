@@ -45,7 +45,7 @@
 	</nav><br>
 	<div class="jumbotron container border border-info">
 		<h3>Add a new Product</h3>
-		<form action="sendData" method="post">
+		<form action="add" method="post">
 			<div class="row">
 				<div class="col-sm-5">
 					<%
@@ -77,7 +77,7 @@
 					<div class="form-group">
 					
 						<label for="category">Select Category</label> 
-						<select class="form-control border border-warning" name="categoryid" required>
+						<select class="form-control border border-warning" name="category_id" required>
 							<% 
 							rs = stmt.executeQuery("select * from categories");
 							while(rs.next())
@@ -117,7 +117,7 @@
 					</div>
 					<p>Product Image</p>
 					<div class="custom-file">
-						<input type="file" class="custom-file-input" name="productImage" accept="image/jpeg, image/png" id="productImage" onchange="loadfile(event)" /> 
+						<input type="file" class="custom-file-input" name="image" accept="image/jpeg, image/png" id="image" onchange="loadfile(event)" /> 
 						<label class="custom-file-label border border-warning" for="productImage">Choose file</label>
 						
 					</div>

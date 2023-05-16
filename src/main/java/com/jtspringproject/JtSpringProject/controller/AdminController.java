@@ -13,11 +13,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.jtspringproject.JtSpringProject.models.Category;
+import com.jtspringproject.JtSpringProject.models.Product;
 import com.jtspringproject.JtSpringProject.models.User;
 import com.jtspringproject.JtSpringProject.services.categoryService;
+import com.jtspringproject.JtSpringProject.services.productService;
 import com.jtspringproject.JtSpringProject.services.userService;
 import com.mysql.cj.protocol.Resultset;
 
+import net.bytebuddy.asm.Advice.This;
 import net.bytebuddy.asm.Advice.OffsetMapping.ForOrigin.Renderer.ForReturnTypeName;
 
 @Controller
@@ -28,6 +31,9 @@ public class AdminController {
 	private userService userService;
 	@Autowired
 	private categoryService categoryService;
+	
+	@Autowired
+	private productService productService;
 	
 	int adminlogcheck = 0;
 	String usernameforclass = "";
@@ -127,16 +133,40 @@ public class AdminController {
 
 	
 //	 --------------------------Remaining --------------------
-	@GetMapping("/admin/products")
-	public String getproduct(Model model) {
-		return "products";
+	@GetMapping("products")
+	public ModelAndView getproduct() {
+		
+		ModelAndView mView = new ModelAndView("products");
+		
+		List<Product> products = this.productService.getProducts();
+		
+		if(products.isEmpty()) {
+			mView.addObject("msg","No products are available");
+		}else {
+			mView.addObject("products",products);	
+		}
+		
+		return mView;
 	}
-	@GetMapping("/admin/products/add")
-	public String addproduct(Model model) {
+	@GetMapping("products/add")
+	public String addproduct() {
 		return "productsAdd";
 	}
 
-	@GetMapping("/admin/products/update")
+	@RequestMapping(value = "products/add",method=RequestMethod.POST)
+	public ModelAndView addProduct(@ModelAttribute Product product) {
+		System.out.println(product.getDescription());
+		
+		ModelAndView mView = new ModelAndView("products");
+		
+		List<Product> products = this.productService.getProducts();
+		mView.addObject("products",products);
+		
+		return mView;
+	}
+	
+	
+	@GetMapping("products/update")
 	public String updateproduct(@RequestParam("pid") int id,Model model) {
 		String pname,pdescription,pimage;
 		int pid,pprice,pweight,pquantity,pcategory;
@@ -178,7 +208,7 @@ public class AdminController {
 		}
 		return "productsUpdate";
 	}
-	@RequestMapping(value = "admin/products/updateData",method=RequestMethod.POST)
+	@RequestMapping(value = "products/updateData",method=RequestMethod.POST)
 	public String updateproducttodb(@RequestParam("id") int id,@RequestParam("name") String name, @RequestParam("price") int price, @RequestParam("weight") int weight, @RequestParam("quantity") int quantity, @RequestParam("description") String description, @RequestParam("productImage") String picture ) 
 	
 	{
@@ -204,7 +234,7 @@ public class AdminController {
 		return "redirect:/admin/products";
 	}
 	
-	@GetMapping("/admin/products/delete")
+	@GetMapping("products/delete")
 	public String removeProductDb(@RequestParam("id") int id)
 	{
 		try
@@ -228,35 +258,6 @@ public class AdminController {
 	@PostMapping("/admin/products")
 	public String postproduct() {
 		return "redirect:/admin/categories";
-	}
-	@RequestMapping(value = "admin/products/sendData",method=RequestMethod.POST)
-	public String addproducttodb(@RequestParam("name") String name, @RequestParam("categoryid") String catid, @RequestParam("price") int price, @RequestParam("weight") int weight, @RequestParam("quantity") int quantity, @RequestParam("description") String description, @RequestParam("productImage") String picture ) {
-		
-		try
-		{
-			Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/ecommjava","root","");
-			Statement stmt = con.createStatement();
-			ResultSet rs = stmt.executeQuery("select * from categories where name = '"+catid+"';");
-			if(rs.next())
-			{
-			int categoryid = rs.getInt(1);
-			
-			PreparedStatement pst = con.prepareStatement("insert into products(name,image,categoryid,quantity,price,weight,description) values(?,?,?,?,?,?,?);");
-			pst.setString(1,name);
-			pst.setString(2, picture);
-			pst.setInt(3, categoryid);
-			pst.setInt(4, quantity);
-			pst.setInt(5, price);
-			pst.setInt(6, weight);
-			pst.setString(7, description);
-			int i = pst.executeUpdate();
-			}
-		}
-		catch(Exception e)
-		{
-			System.out.println("Exception:"+e);
-		}
-		return "redirect:/admin/products";
 	}
 	
 	@GetMapping("/admin/customers")

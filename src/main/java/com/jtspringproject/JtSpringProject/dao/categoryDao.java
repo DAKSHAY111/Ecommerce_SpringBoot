@@ -45,6 +45,7 @@ public class categoryDao {
 		return false;
 	}
 
+	@Transactional
 	public Category updateCategory(int id, String name) {
 		Category category = this.sessionFactory.getCurrentSession().get(Category.class, id);
 		category.setName(name);
