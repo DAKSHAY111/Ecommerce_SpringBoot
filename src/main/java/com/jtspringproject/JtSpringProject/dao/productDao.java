@@ -2,11 +2,13 @@ package com.jtspringproject.JtSpringProject.dao;
 
 import java.util.List;
 
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.jtspringproject.JtSpringProject.models.Category;
 import com.jtspringproject.JtSpringProject.models.Product;
 
 @Repository
@@ -28,4 +30,23 @@ public class productDao {
 		this.sessionFactory.getCurrentSession().saveOrUpdate(product);
 		return product;
 	}
+	
+	@Transactional
+	public Product getProduct(int id) {
+		return this.sessionFactory.getCurrentSession().get(Product.class, id);
+	}
+	
+	@Transactional
+	public Boolean deletProduct(int id) {
+
+		Session session = this.sessionFactory.getCurrentSession();
+		Object persistanceInstance = session.load(Product.class, id);
+
+		if (persistanceInstance != null) {
+			session.delete(persistanceInstance);
+			return true;
+		}
+		return false;
+	}
+
 }

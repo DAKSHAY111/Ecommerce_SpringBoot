@@ -166,103 +166,50 @@ public class AdminController {
 	}
 	
 	
-	@GetMapping("products/update")
-	public String updateproduct(@RequestParam("pid") int id,Model model) {
-		String pname,pdescription,pimage;
-		int pid,pprice,pweight,pquantity,pcategory;
-		try
-		{
-			Class.forName("com.mysql.jdbc.Driver");
-			Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/ecommjava","root","");
-			Statement stmt = con.createStatement();
-			Statement stmt2 = con.createStatement();
-			ResultSet rst = stmt.executeQuery("select * from products where id = "+id+";");
-			
-			if(rst.next())
-			{
-			pid = rst.getInt(1);
-			pname = rst.getString(2);
-			pimage = rst.getString(3);
-			pcategory = rst.getInt(4);
-			pquantity = rst.getInt(5);
-			pprice =  rst.getInt(6);
-			pweight =  rst.getInt(7);
-			pdescription = rst.getString(8);
-			model.addAttribute("pid",pid);
-			model.addAttribute("pname",pname);
-			model.addAttribute("pimage",pimage);
-			ResultSet rst2 = stmt.executeQuery("select * from categories where categoryid = "+pcategory+";");
-			if(rst2.next())
-			{
-				model.addAttribute("pcategory",rst2.getString(2));
-			}
-			model.addAttribute("pquantity",pquantity);
-			model.addAttribute("pprice",pprice);
-			model.addAttribute("pweight",pweight);
-			model.addAttribute("pdescription",pdescription);
-			}
-		}
-		catch(Exception e)
-		{
-			System.out.println("Exception:"+e);
-		}
-		return "productsUpdate";
+	@GetMapping("products/update/{id}")
+	public ModelAndView updateproduct(@PathVariable("id") int id) {
+		
+		ModelAndView mView = new ModelAndView("productsUpdate");
+		
+		Product product = this.productService.getProduc(id);
+		mView.addObject("product", product);
+		return mView;
 	}
-	@RequestMapping(value = "products/updateData",method=RequestMethod.POST)
-	public String updateproducttodb(@RequestParam("id") int id,@RequestParam("name") String name, @RequestParam("price") int price, @RequestParam("weight") int weight, @RequestParam("quantity") int quantity, @RequestParam("description") String description, @RequestParam("productImage") String picture ) 
 	
+	@RequestMapping(value = "products/update/{id}",method=RequestMethod.POST)
+	public ModelAndView updateProduct(@ModelAttribute Product product) 
 	{
-		try
-		{
-			Class.forName("com.mysql.jdbc.Driver");
-			Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/ecommjava","root","");
-			
-			PreparedStatement pst = con.prepareStatement("update products set name= ?,image = ?,quantity = ?, price = ?, weight = ?,description = ? where id = ?;");
-			pst.setString(1, name);
-			pst.setString(2, picture);
-			pst.setInt(3, quantity);
-			pst.setInt(4, price);
-			pst.setInt(5, weight);
-			pst.setString(6, description);
-			pst.setInt(7, id);
-			int i = pst.executeUpdate();			
+		ModelAndView mView = new ModelAndView("products");
+		
+		List<Product> products = this.productService.getProducts();
+		
+		if(products.isEmpty()) {
+			mView.addObject("msg","No products are available");
+		}else {
+			mView.addObject("products",products);	
 		}
-		catch(Exception e)
-		{
-			System.out.println("Exception:"+e);
-		}
-		return "redirect:/admin/products";
+		
+		return mView;
 	}
 	
 	@GetMapping("products/delete")
 	public String removeProductDb(@RequestParam("id") int id)
 	{
-		try
-		{
-			Class.forName("com.mysql.jdbc.Driver");
-			Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/ecommjava","root","");
-			
-			
-			PreparedStatement pst = con.prepareStatement("delete from products where id = ? ;");
-			pst.setInt(1, id);
-			int i = pst.executeUpdate();
-			
-		}
-		catch(Exception e)
-		{
-			System.out.println("Exception:"+e);
-		}
+		this.productService.deleteProduct(id);
 		return "redirect:/admin/products";
 	}
 	
-	@PostMapping("/admin/products")
+	@PostMapping("products")
 	public String postproduct() {
 		return "redirect:/admin/categories";
 	}
 	
-	@GetMapping("/admin/customers")
-	public String getCustomerDetail() {
-		return "displayCustomers";
+	@GetMapping("customers")
+	public ModelAndView getCustomerDetail() {
+		ModelAndView mView = new ModelAndView("displayCustomers");
+		List<User> users = this.userService.getUsers();
+		mView.addObject("customers", users);
+		return mView;
 	}
 	
 	
